@@ -18,6 +18,7 @@ package com.example.android.materialme;
 
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -32,6 +33,8 @@ import java.util.Collections;
  * with poor design choices.
  */
 public class MainActivity extends AppCompatActivity {
+
+    public static final String SPORTS_DATA = "SportsData";
 
     // Member variables.
     private RecyclerView mRecyclerView;
@@ -57,7 +60,15 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter);
 
         // Get the data.
-        initializeData();
+        if (savedInstanceState != null)
+        {
+            ArrayList<Sport> savedData = savedInstanceState.getParcelableArrayList(SPORTS_DATA);
+            mSportsData.addAll(savedData);
+            mAdapter.notifyDataSetChanged();
+        }
+        else {
+            initializeData();
+        }
 
         ItemTouchHelper helper = new ItemTouchHelper(
                 new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT){
@@ -108,5 +119,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void resetSports(View view) {
         initializeData();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(SPORTS_DATA, mSportsData);
     }
 }
