@@ -70,8 +70,9 @@ public class MainActivity extends AppCompatActivity {
             initializeData();
         }
 
+        int swipeDirs = ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
         ItemTouchHelper helper = new ItemTouchHelper(
-                new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT){
+                new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, swipeDirs){
 
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
