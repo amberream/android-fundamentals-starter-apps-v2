@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Who Wrote It?</string>
+    <string name="inputHint">Book Title</string>
+    <string name="instructions">Enter a book name to find out who wrote the book.</string>
+    <string name="buttonText">Search Books</string>
+    <string name="no_results">No results</string>
+</resources>
