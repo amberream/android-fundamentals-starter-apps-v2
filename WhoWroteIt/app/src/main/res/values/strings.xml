@@ -4,4 +4,7 @@
     <string name="instructions">Enter a book name to find out who wrote the book.</string>
     <string name="buttonText">Search Books</string>
     <string name="no_results">No results</string>
+    <string name="loading">Loading</string>
+    <string name="no_search_item">Please enter a search term.</string>
+    <string name="no_network">Please check your network connection and try again.</string>
 </resources>

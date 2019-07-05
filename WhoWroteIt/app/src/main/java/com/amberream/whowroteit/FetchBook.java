@@ -6,7 +6,6 @@ import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.lang.ref.WeakReference;
 
@@ -15,6 +14,7 @@ import java.lang.ref.WeakReference;
  */
 public class FetchBook extends AsyncTask<String, Void, String> {
 
+    // Use weak references in async task so it can be garbage collected
     private WeakReference<TextView> textViewAuthor;
     private WeakReference<TextView> textViewTitle;
 
