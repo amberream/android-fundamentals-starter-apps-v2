@@ -4,6 +4,8 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
@@ -21,6 +23,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int NOTIFICATION_ID = 0;
 
     private Button buttonNotify;
+    private Button buttonUpdate;
+    private Button buttonCancel;
 
     private NotificationManager mNotificationManager;
 
@@ -30,6 +34,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         buttonNotify = findViewById(R.id.notify);
+        buttonUpdate = findViewById(R.id.update);
+        buttonCancel = findViewById(R.id.cancel);
+
+        setNotificationState(true, false, false);
+
         createNotificationChannel();
     }
 
@@ -50,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void sendNotification(View view) {
         mNotificationManager.notify(NOTIFICATION_ID, getNotificationBuilder().build());
+        setNotificationState(false, true, true);
     }
 
     private NotificationCompat.Builder getNotificationBuilder()
@@ -72,4 +82,31 @@ public class MainActivity extends AppCompatActivity {
         builder.setAutoCancel(true);
         return builder;
     }
+
+    public void cancelNotification(View view) {
+        mNotificationManager.cancel(NOTIFICATION_ID);
+        setNotificationState(true, false, false);
+    }
+
+    public void updateNotification(View view) {
+        Bitmap androidImage = BitmapFactory.decodeResource(getResources(), R.drawable.mascot_1);
+        NotificationCompat.Builder builder = getNotificationBuilder();
+
+        // use big picture Style
+        NotificationCompat.BigPictureStyle style = new NotificationCompat.BigPictureStyle();
+        style.bigPicture(androidImage);
+        style.setBigContentTitle(getString(R.string.notification_updated));
+        builder.setStyle(style);
+
+        mNotificationManager.notify(NOTIFICATION_ID, builder.build());
+        setNotificationState(false, false, true);
+    }
+
+    public void setNotificationState(boolean notify, boolean update, boolean cancel)
+    {
+        buttonNotify.setEnabled(notify);
+        buttonUpdate.setEnabled(update);
+        buttonCancel.setEnabled(cancel);
+    }
+
 }
