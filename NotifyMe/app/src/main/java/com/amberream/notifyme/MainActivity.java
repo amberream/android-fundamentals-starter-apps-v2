@@ -3,7 +3,10 @@ package com.amberream.notifyme;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -22,11 +25,16 @@ public class MainActivity extends AppCompatActivity {
     // associate the notification with a notification ID so we can update or cancel the notification in the future
     private static final int NOTIFICATION_ID = 0;
 
+    // constant for the notification action button
+    private static final String ACTION_UPDATE_NOTIFICATION = "com.amberream.notifyme.ACTION_UPDATE_NOTIFICATION";
+
     private Button buttonNotify;
     private Button buttonUpdate;
     private Button buttonCancel;
 
     private NotificationManager mNotificationManager;
+
+    private NotificationReceiver mNotificationReceiver = new NotificationReceiver();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
         setNotificationState(true, false, false);
 
         createNotificationChannel();
+
+        // register the broadcast receiver to receive the update action from the notification
+        registerReceiver(mNotificationReceiver, new IntentFilter(ACTION_UPDATE_NOTIFICATION));
     }
 
     private void createNotificationChannel(){
@@ -58,7 +69,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendNotification(View view) {
-        mNotificationManager.notify(NOTIFICATION_ID, getNotificationBuilder().build());
+
+        // set up a pending intent to update the notification later
+        Intent intent = new Intent(ACTION_UPDATE_NOTIFICATION);
+        PendingIntent updatePendingIntent = PendingIntent.getBroadcast(this, NOTIFICATION_ID, intent, PendingIntent.FLAG_ONE_SHOT);
+        NotificationCompat.Builder builder = getNotificationBuilder();
+        builder.addAction(R.drawable.ic_update, getString(R.string.update_notification), updatePendingIntent);
+
+        // deliver the notification
+        mNotificationManager.notify(NOTIFICATION_ID, builder.build());
+
+        // enable update and cancel
         setNotificationState(false, true, true);
     }
 
@@ -97,8 +118,12 @@ public class MainActivity extends AppCompatActivity {
         style.bigPicture(androidImage);
         style.setBigContentTitle(getString(R.string.notification_updated));
         builder.setStyle(style);
+//        builder.setLargeIcon(androidImage);
 
+        // deliver the notification
         mNotificationManager.notify(NOTIFICATION_ID, builder.build());
+
+        // update the buttons
         setNotificationState(false, false, true);
     }
 
@@ -108,5 +133,20 @@ public class MainActivity extends AppCompatActivity {
         buttonUpdate.setEnabled(update);
         buttonCancel.setEnabled(cancel);
     }
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(mNotificationReceiver);
+        super.onDestroy();
+    }
+
+    class NotificationReceiver extends BroadcastReceiver
+    {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateNotification(null);
+        }
+    }
+
 
 }
