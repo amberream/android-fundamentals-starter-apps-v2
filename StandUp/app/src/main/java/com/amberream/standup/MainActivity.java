@@ -31,11 +31,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Intent notifyIntent = new Intent(this, AlarmReceiver.class);
+        // check if the alarm is turned on
+        boolean enabled = PendingIntent.getBroadcast(this, NOTIFICATION_ID, notifyIntent, PendingIntent.FLAG_NO_CREATE) != null;
+        // create the new pending intent
         final PendingIntent pendingIntent = PendingIntent.getBroadcast(this, NOTIFICATION_ID, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         final AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 
         alarmToggle = findViewById(R.id.toggleButton);
+        alarmToggle.setChecked(enabled);
+
         alarmToggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
