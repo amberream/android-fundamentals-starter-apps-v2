@@ -1,13 +1,83 @@
 package com.amberream.notificationscheduler;
 
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.RadioGroup;
+import android.widget.Switch;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final int JOB_ID = 0;
+
+    // initialized in scheduleJob
+    private JobScheduler mJobScheduler;
+
+    private Switch mSwitchDeviceIdle;
+    private Switch mSwitchDeviceCharging;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mSwitchDeviceCharging = findViewById(R.id.chargingSwitch);
+        mSwitchDeviceIdle = findViewById(R.id.idleSwitch);
+    }
+
+    public void scheduleJob(View view) {
+
+        RadioGroup networkOptions = findViewById(R.id.networkOptions);
+        int checkedButton = networkOptions.getCheckedRadioButtonId();
+
+        // default
+        int selectedNetworkOption = JobInfo.NETWORK_TYPE_NONE;
+
+        switch (checkedButton) {
+            case R.id.noNetwork:
+                selectedNetworkOption = JobInfo.NETWORK_TYPE_NONE;
+                break;
+            case R.id.wifiNetwork:
+                selectedNetworkOption = JobInfo.NETWORK_TYPE_UNMETERED;
+                break;
+            case R.id.anyNetwork:
+                selectedNetworkOption = JobInfo.NETWORK_TYPE_ANY;
+                break;
+        }
+
+        boolean constraintSet = selectedNetworkOption != JobInfo.NETWORK_TYPE_NONE ||
+                mSwitchDeviceIdle.isChecked() || mSwitchDeviceCharging.isChecked();
+
+        // to run a job at least one constraint must be set (network type none doesn't count!)
+        if (constraintSet) {
+            mJobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+
+            ComponentName componentName = new ComponentName(getPackageName(), NotificationJobService.class.getName());
+            JobInfo.Builder builder = new JobInfo.Builder(JOB_ID, componentName);
+            builder.setRequiredNetworkType(selectedNetworkOption);
+            builder.setRequiresCharging(mSwitchDeviceCharging.isChecked());
+            builder.setRequiresDeviceIdle(mSwitchDeviceIdle.isChecked());
+
+            mJobScheduler.schedule(builder.build());
+            Toast.makeText(this, "Job Scheduled, job will run when the constraints are met", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "Please set at least one constraint", Toast.LENGTH_SHORT);
+        }
+    }
+
+    public void cancelJob (View view)
+    {
+        // mJobScheduler is initialized in scheduleJob
+        // so if it's null, no jobs have been scheduled
+        if (mJobScheduler != null)
+        {
+            mJobScheduler.cancelAll();
+            mJobScheduler = null;
+            Toast.makeText(this, "Job cancelled", Toast.LENGTH_SHORT).show();
+        }
     }
 }
