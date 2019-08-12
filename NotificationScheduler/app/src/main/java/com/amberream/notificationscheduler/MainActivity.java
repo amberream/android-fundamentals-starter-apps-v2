@@ -7,7 +7,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RadioGroup;
+import android.widget.SeekBar;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -19,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
 
     private Switch mSwitchDeviceIdle;
     private Switch mSwitchDeviceCharging;
+    private SeekBar mSeekBar;
+    private TextView mTextViewProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,12 +31,42 @@ public class MainActivity extends AppCompatActivity {
 
         mSwitchDeviceCharging = findViewById(R.id.chargingSwitch);
         mSwitchDeviceIdle = findViewById(R.id.idleSwitch);
+        mSeekBar = findViewById(R.id.seekBar);
+        mTextViewProgress = findViewById(R.id.seekBarProgress);
+
+        mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (progress > 0)
+                {
+                    mTextViewProgress.setText(progress + " s");
+                }
+                else
+                {
+                    mTextViewProgress.setText("Not Set");
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     public void scheduleJob(View view) {
 
         RadioGroup networkOptions = findViewById(R.id.networkOptions);
         int checkedButton = networkOptions.getCheckedRadioButtonId();
+
+        // used to override the deadline
+        int seekBarProgress = mSeekBar.getProgress();
+        boolean seekBarSet = seekBarProgress > 0;
 
         // default
         int selectedNetworkOption = JobInfo.NETWORK_TYPE_NONE;
@@ -50,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         boolean constraintSet = selectedNetworkOption != JobInfo.NETWORK_TYPE_NONE ||
-                mSwitchDeviceIdle.isChecked() || mSwitchDeviceCharging.isChecked();
+                mSwitchDeviceIdle.isChecked() || mSwitchDeviceCharging.isChecked() || seekBarSet;
 
         // to run a job at least one constraint must be set (network type none doesn't count!)
         if (constraintSet) {
@@ -61,6 +95,12 @@ public class MainActivity extends AppCompatActivity {
             builder.setRequiredNetworkType(selectedNetworkOption);
             builder.setRequiresCharging(mSwitchDeviceCharging.isChecked());
             builder.setRequiresDeviceIdle(mSwitchDeviceIdle.isChecked());
+
+            // only set a deadline if it's > 0 sec
+            if (seekBarSet)
+            {
+                builder.setOverrideDeadline(seekBarProgress * 1000);
+            }
 
             mJobScheduler.schedule(builder.build());
             Toast.makeText(this, "Job Scheduled, job will run when the constraints are met", Toast.LENGTH_LONG).show();
